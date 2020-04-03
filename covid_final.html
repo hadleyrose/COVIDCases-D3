@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<title>Covid Cases Chart</title>
+<link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+
+
+<svg id="chart" width="960" height="500"></svg>
+
+<script src="d3.min.js"></script>
+
+<script>
+//-----------------------------SVG------------------------------//
+var svg = d3.select("svg");
+var margin = {top: 20, right: 80, bottom: 30, left: 50};
+var width = svg.attr("width") - margin.left - margin.right;
+var height = svg.attr("height") - margin.top - margin.bottom;
+var g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleLinear().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
+var z = d3.scaleOrdinal(d3.schemeCategory10);
+
+var line = d3.line()
+    .curve(d3.curveBasis)
+    .x(function (d) {
+        return x(d.Days);
+    })
+    .y(function (d) {
+        return y(d.Cases);
+    });
+
+//-----------------------------DATA-----------------------------//
+// based on the structure of my dataset, wrote my own code to parse it appropriately
+// see return_distinct_rows_select_cols.js for the code I had to iteratively test to figure this out
+// no prior javascript experience, I repeat, no prior javascript experience
+var parseTime = d3.timeParse("%b %d, %Y");
+var data = d3.csv("covid.csv").then(function(data) {
+    var result = Array.from(new Set(data.map(s => s.Entity))).map(Entity => { // for each distinct entity
+        return {
+            Entity: Entity, // return entity
+            values: data.filter(s => s.Entity == Entity).map(function(obj) {
+                return {
+                    Date: parseTime(obj.Date), // parse date
+                    Cases: obj.Cases,
+                    Days: obj.Days
+                } // return only the columns for each row that matches the distinct name
+            })
+        }
+    });
+
+    console.log(result);
+
+//----------------------------SCALES----------------------------//
+// need to be updated to match chart we are re-creating
+// x is Days since 100th confirmed case
+// y is total confirmed cases
+    x.domain(d3.extent(data, function (d) {
+        return d.Days;
+    }));
+console.log(x, result)
+    y.domain([
+        d3.min(result, function (c) {
+            return d3.min(c.values, function (d) {
+                return d.Cases;
+            });
+        }),
+        d3.max(result, function (c) {
+            return d3.max(c.values, function (d) {
+                return d.Cases;
+            });
+        })
+    ]);
+
+    z.domain(result.map(function (c) {
+        return c.Entity;
+    }));
+
+//-----------------------------AXES-----------------------------//
+    g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x))
+        .append("text")
+        .attr("x", 100)
+        .attr("dx", "0.71em")
+        .attr("fill", "#000")
+        .text('Days since 100th Case');
+
+    g.append("g")
+        .attr("class", "axis axis--y")
+        .call(d3.axisLeft(y))
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "0.71em")
+        .attr("fill", "#000")
+        .text("Total Cases");
+
+//----------------------------LINES-----------------------------//
+    var entity = g.selectAll(".entity")
+        .data(result)
+        .enter().append("g")
+        .attr("class", "entity");
+
+    entity.append("path")
+        .attr("class", "line")
+        .attr("d", function (d) {
+            return line(d.values);
+        })
+        .style("stroke", function (d) {
+            return z(d.entity);
+        });
+    // entity.append("text")
+    //     .datum(function (d) {
+    //         return {entity: d.Entity, value: d.values[d.values.length - 1]};
+    //     })
+    //     .attr("transform", function (d) {
+    //         return "translate(" + x(d.value.Days) + "," + y(d.value.Cases) + ")";
+    //     })
+    //     .attr("x", 3)
+    //     .attr("dy", "0.35em")
+    //     .style("font", "10px sans-serif")
+    //     .text(function (d) {
+    //         return d.entity;
+    //     });
+
+//---------------------------TOOLTIP----------------------------//
+
+});
+
+
+</script>
+</body>

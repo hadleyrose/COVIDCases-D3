@@ -1,4 +1,4 @@
-Entity,Code,Date,Total confirmed cases (cases),Days since the 100th total confirmed case (days)
+Entity,Code,Date,Cases,Days
 Afghanistan,AFG,"Dec 31, 2019",0,
 Afghanistan,AFG,"Jan 1, 2020",0,
 Afghanistan,AFG,"Jan 2, 2020",0,
