@@ -45,8 +45,8 @@ var data = d3.csv("covid.csv").then(function(data) {
             values: data.filter(s => s.Entity == Entity).map(function(obj) {
                 return {
                     Date: parseTime(obj.Date), // parse date
-                    Cases: obj.Cases,
-                    Days: obj.Days
+                    Cases: +obj.Cases, // thanks to SO, realized my d3.max was wrong b/c not parsing as int
+                    Days: +obj.Days
                 } // return only the columns for each row that matches the distinct name
             })
         }
@@ -58,9 +58,18 @@ var data = d3.csv("covid.csv").then(function(data) {
 // need to be updated to match chart we are re-creating
 // x is Days since 100th confirmed case
 // y is total confirmed cases
-    x.domain(d3.extent(data, function (d) {
-        return d.Days;
-    }));
+    x.domain([
+        d3.min(result, function (c) {
+            return d3.min(c.values, function (d) {
+                return d.Days;
+            });
+        }),
+        d3.max(result, function (c) {
+            return d3.max(c.values, function (d) {
+                return d.Days;
+            });
+        })
+    ]);
 console.log(x, result)
     y.domain([
         d3.min(result, function (c) {
@@ -114,19 +123,19 @@ console.log(x, result)
         .style("stroke", function (d) {
             return z(d.Entity);
         });
-    // entity.append("text")
-    //     .datum(function (d) {
-    //         return {entity: d.Entity, value: d.values[d.values.length - 1]};
-    //     })
-    //     .attr("transform", function (d) {
-    //         return "translate(" + x(d.value.Days) + "," + y(d.value.Cases) + ")";
-    //     })
-    //     .attr("x", 3)
-    //     .attr("dy", "0.35em")
-    //     .style("font", "10px sans-serif")
-    //     .text(function (d) {
-    //         return d.entity;
-    //     });
+    entity.append("text")
+        .datum(function (d) {
+            return {entity: d.Entity, value: d.values[d.values.length - 1]};
+        })
+        .attr("transform", function (d) {
+            return "translate(" + x(d.value.Days) + "," + y(d.value.Cases) + ")";
+        })
+        .attr("x", 3)
+        .attr("dy", "0.35em")
+        .style("font", "10px sans-serif")
+        .text(function (d) {
+            return d.entity;
+        });
 
 //---------------------------TOOLTIP----------------------------//
 
