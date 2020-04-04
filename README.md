@@ -13,7 +13,9 @@ to recreate [this chart](https://ourworldindata.org/grapher/covid-confirmed-case
 
 I just learned the basics of d3.js from [this source](https://square.github.io/intro-to-d3/) and [this source](https://www.freecodecamp.org/news/learn-d3-js-in-5-minutes-c5ec29fb0725/). While I have a background in HTML and CSS, I do not know javascript and do not use it regularly (see: self-proclaimed Pythonista in LinkedIn headline). This project is for learning purposes only and is not intended to inform in any way on the COVID-19 crisis.
 
-**2020-04-02:** The code from datawanderings did not work for me, even the original code did not work. I will focus on adapting other examples and tutorials to chart my data. Specifically, I'll be adapting [this gist](https://gist.github.com/mbostock/3884955) to my data. **UPDATE**: [a server is required, even if just local, for csv files to be accessible to the fetch API](https://stackoverflow.com/a/58129062).
+**UPDATE**: [a server is required, even if just local, for csv files to be accessible to the fetch API](https://stackoverflow.com/a/58129062).
+
+**2020-04-02:** I had some issues with the code from datawanderings. I will focus on adapting parts of that code with other examples and tutorials to chart my data. Specifically, I'll be adapting [this gist](https://gist.github.com/mbostock/3884955) to my data.
 
 **csv loading is async**: [d3 v5 uses fetch API](https://stackoverflow.com/a/49604124) and [an interesting blog post that helped in my learning](http://tech4teaching.net/several-things-i-learned-when-using-d3-js-to-import-and-parse-csv-file/)
 
@@ -21,4 +23,6 @@ I just learned the basics of d3.js from [this source](https://square.github.io/i
 
 [Walkthrough - @razpudding's d3 multiline chart](https://observablehq.com/@razpudding/d3-multi-line-chart)
 
-**Note:** using Live Server extension in VS Code
+**Note:** using Live Server extension in VS Code for development.
+
+**2020-04-04** Finally got a functional chart with appropriate axes! The World line is really stealing the focus of the viz, so I'm going to filter out any data with 'World' as the entity. Additionally, to better match the original chart, I'm going to filter out any data where Total Confirmed Cases is greater than or equal to 100.
