@@ -7,3 +7,9 @@
     stroke: steelblue;
     stroke-width: 1.5px;
   }
+/* TOOLTIP */
+.tooltip {
+    fill: #2b2929;
+    font-family: sans-serif;
+    font-size: 75%;
+    }

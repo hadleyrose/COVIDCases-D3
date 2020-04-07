@@ -46,59 +46,63 @@ var data = d3.csv("covid.csv").then(function(data) {
                 return {
                     Date: parseTime(obj.Date), // parse date
                     Cases: +obj.Cases, // thanks to SO, realized my d3.max was wrong b/c not parsing as int
-                    Days: +obj.Days
+                    Days: +obj.Days // used + to indicate numeric, parseInt was causing error with line()
                 } // return only the columns for each row that matches the distinct name
             })
         }
     });
 
+    var result2 = result.filter(s => s.Entity != 'World').map(Entity => {
+        return {...Entity, values: Entity.values.filter(e => e.Cases >= 100)}
+    }).filter(s => s.values.length != 0) // entity.append below will not append text labels if values.length == 0;
+
     console.log(result);
+    console.log(result2);
 
 //----------------------------SCALES----------------------------//
 // need to be updated to match chart we are re-creating
 // x is Days since 100th confirmed case
 // y is total confirmed cases
     x.domain([
-        d3.min(result, function (c) {
-            return d3.min(c.values, function (d) {
-                return d.Days;
-            });
-        }),
-        d3.max(result, function (c) {
+        0,
+        d3.max(result2, function (c) {
             return d3.max(c.values, function (d) {
                 return d.Days;
             });
         })
     ]);
-console.log(x, result)
     y.domain([
-        d3.min(result, function (c) {
+        d3.min(result2, function (c) {
             return d3.min(c.values, function (d) {
                 return d.Cases;
             });
         }),
-        d3.max(result, function (c) {
+        d3.max(result2, function (c) {
             return d3.max(c.values, function (d) {
                 return d.Cases;
             });
         })
     ]);
 
-    z.domain(result.map(function (c) {
+    z.domain(result2.map(function (c) {
         return c.Entity;
     }));
 
 //-----------------------------AXES-----------------------------//
+    // adds x axis and ticks
     g.append("g")
         .attr("class", "axis axis--x")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x))
-        .append("text")
-        .attr("x", 100)
+        .call(d3.axisBottom(x));
+    // adds x axis label
+    svg.append("text")
+        .attr("x", width / 2)
         .attr("dx", "0.71em")
+        .attr("transform", "translate(0," + (height + margin.top*2.3) + ")")
         .attr("fill", "#000")
+        .style("font", "10px sans-serif")
         .text('Days since 100th Case');
-
+    // adds y axis, ticks, and label
     g.append("g")
         .attr("class", "axis axis--y")
         .call(d3.axisLeft(y))
@@ -111,10 +115,10 @@ console.log(x, result)
 
 //----------------------------LINES-----------------------------//
     var entity = g.selectAll(".entity")
-        .data(result)
+        .data(result2)
         .enter().append("g")
         .attr("class", "entity");
-
+    // adds line for each entity
     entity.append("path")
         .attr("class", "line")
         .attr("d", function (d) {
@@ -123,6 +127,7 @@ console.log(x, result)
         .style("stroke", function (d) {
             return z(d.Entity);
         });
+    // adds label for each entity
     entity.append("text")
         .datum(function (d) {
             return {entity: d.Entity, value: d.values[d.values.length - 1]};
@@ -138,7 +143,65 @@ console.log(x, result)
         });
 
 //---------------------------TOOLTIP----------------------------//
+const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "absolute");
+var path = g.selectAll("path");
 
+svg.on("mousemove", moved)
+    .on("mouseenter", entered)
+    .on("mouseleave", left);
+
+function moved() {
+d3.event.preventDefault();
+entity.selectAll("points")
+    .data(function(d) {return d.values})
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Days); })      
+    .attr("cy", function(d) { return y(d.Cases); })    
+    .attr("r", 3)
+    .attr("class","point")
+    .style("opacity", 0)
+    .on('mouseover', function(d) {
+        tooltip.transition()
+    .delay(30)
+        .duration(200)
+        .style("opacity", 1);
+        tooltip.html(d.Cases)
+        .style("left", (d3.event.pageX + 25) + "px")
+        .style("top", (d3.event.pageY) + "px");       
+        const selection = d3.select(this).raise();
+        selection
+        .transition()
+        .delay("20")
+        .duration("200")
+        .attr("r", 3)
+        .style("opacity", 1)
+        .style("fill","#000");
+    })                
+    .on("mouseout", function(d) {      
+        tooltip.transition()        
+        .duration(100)      
+        .style("opacity", 0);        
+        const selection = d3.select(this);
+        selection
+        .transition()
+        .delay("20")
+        .duration("200")
+        .attr("r", 3)
+        .style("opacity", 0);
+    });
+}
+
+function entered() {
+path.style("mix-blend-mode", null).attr("stroke", "#ddd");
+}
+
+function left() {
+path.style("mix-blend-mode", "multiply").attr("stroke", null);
+}
 });
 
 
