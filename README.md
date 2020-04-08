@@ -30,6 +30,6 @@ I just learned the basics of d3.js from [this source](https://square.github.io/i
 
 **Note:** using Live Server extension in VS Code for development.
 
-**2020-04-04** Finally got a functional chart with appropriate axes! The World line is really stealing the focus of the viz, so I'm going to filter out any data with 'World' as the entity. Additionally, to better match the original chart, I'm going to filter out any data where Total Confirmed Cases is greater than or equal to 100.
+**2020-04-04** Finally got a functional chart with appropriate axes! The World line is really stealing the focus of the viz, so I'm going to filter out any data with 'World' as the entity. Additionally, to better match the original chart, I'm going to filter out any data where Total Confirmed Cases is not greater than or equal to 100.
 
 **2020-04-06** Added tooltip to display the number of cases for each data point on hover. The tooltip is a little laggy and needs to be further edited to fit my purposes. I want to incorporate "ghost lines" in the next iteration, where all lines are grey until hovered over.
